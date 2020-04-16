@@ -121,7 +121,9 @@ public class Main extends Application {
                     }
                 }
             }
+            
             player.setTranslateX(player.getTranslateX() + (movingRight ? 1 : -1));
+            
         }
     }
 
