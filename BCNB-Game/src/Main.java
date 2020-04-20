@@ -1,9 +1,8 @@
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import javafx.animation.AnimationTimer;
-import javafx.application.Application;
+import javafx.application.*;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -18,24 +17,26 @@ public class Main extends Application {
     private HashMap<KeyCode, Boolean> keys = new HashMap<KeyCode, Boolean>();
 
     private ArrayList<Node> platforms = new ArrayList<Node>();
-    private ArrayList<Node> coins = new ArrayList<Node>();
 
     private Pane appRoot = new Pane();
     private Pane gameRoot = new Pane();
     private Pane uiRoot = new Pane();
 
     private Node player;
+    private Node enemy;
     private Point2D playerVelocity = new Point2D(0, 0);
     private boolean canJump = true;
 
     private int levelWidth;
+    private int levelHeight;
 
     private boolean running = true;
 
     private void initContent() {
-        Rectangle bg = new Rectangle(1280, 720);
+        Rectangle bg = new Rectangle(1000, 1000);
 
         levelWidth = LevelData.LEVEL1[0].length() * 60;
+        levelHeight = LevelData.LEVEL1.length * 60;
 
         for (int i = 0; i < LevelData.LEVEL1.length; i++) {
             String line = LevelData.LEVEL1[i];
@@ -47,15 +48,13 @@ public class Main extends Application {
                         Node platform = createEntity(j*60, i*60, 60, 60, Color.BROWN);
                         platforms.add(platform);
                         break;
-                    case '2':
-                        Node coin = createEntity(j*60, i*60, 60, 60, Color.GOLD);
-                        coins.add(coin);
-                        break;
                 }
             }
         }
 
         player = createEntity(0, 600, 40, 40, Color.BLUE);
+        
+        enemy = createEntity(3500, 700, 40, 40, Color.YELLOW);
 
         player.translateXProperty().addListener((obs, old, newValue) -> {
             int offset = newValue.intValue();
@@ -84,23 +83,14 @@ public class Main extends Application {
         if (playerVelocity.getY() < 10) {
             playerVelocity = playerVelocity.add(0, 1);
         }
+        
+        if(isPlayerAboveGround() || isKilled()){
+        	System.exit(0);
+        }
 
         movePlayerY((int)playerVelocity.getY());
 
-        for (Node coin : coins) {
-            if (player.getBoundsInParent().intersects(coin.getBoundsInParent())) {
-                coin.getProperties().put("alive", false);
-                running = false;
-            }
-        }
-
-        for (Iterator<Node> it = coins.iterator(); it.hasNext(); ) {
-            Node coin = it.next();
-            if (!(Boolean)coin.getProperties().get("alive")) {
-                it.remove();
-                gameRoot.getChildren().remove(coin);
-            }
-        }
+        
     }
 
     private void movePlayerX(int value) {
@@ -157,6 +147,18 @@ public class Main extends Application {
             canJump = false;
         }
     }
+    
+    private boolean isPlayerAboveGround(){
+    	if(player.getTranslateY() > levelHeight){
+    		return true;
+    	}else{
+    		return false;
+    	}
+    }
+    
+    private boolean isKilled(){
+    	return false;
+    }
 
     private Node createEntity(int x, int y, int w, int h, Color color) {
         Rectangle entity = new Rectangle(w, h);
@@ -180,7 +182,7 @@ public class Main extends Application {
         Scene scene = new Scene(appRoot);
         scene.setOnKeyPressed(event -> keys.put(event.getCode(), true));
         scene.setOnKeyReleased(event -> keys.put(event.getCode(), false));
-        primaryStage.setTitle("Platformer");
+        primaryStage.setTitle("Fario");
         primaryStage.setScene(scene);
         primaryStage.show();
 
